@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block root_content %}
+<div class="welcome">
+  <h1>keymaker</h1>
+  <form id="request" method="post" action="{{url_for('reset_code')}}">
+    <div class="input-append">
+      <input id="username" type="text" class="input-xlarge" name="username" autofocus="true" placeholder="username" data-content="{{_('Enter your username and click the Reset button to reset your account password.')}}" data-placement="bottom" data-trigger="hover" /> 
+      <a id="btn-submit" href="#" rel="tooltip" title="{{_('Reset')}}" class="btn"><i class="icon-repeat"></i></a>
+    </div>
+  </form>
+  <script type="text/javascript">
+    function submitForm() {
+      $("input#username").attr('readonly', true);
+      $("input#username").popover('hide');
+      $("form#request").submit();
+    }
+    $("a#btn-submit").click(function(){
+      submitForm();
+    });
+    $(function(){
+      $("input#username").popover();
+    });
+  </script>
+</div>
+{% endblock %}

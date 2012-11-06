@@ -1,0 +1,52 @@
+body {
+  background: url('/static/img/bg.png');
+  font-family: 'Dosis', sans-serif;
+}
+button {
+  font-family: 'Dosis', sans-serif;
+}
+div.welcome {
+  color: #8a8a8a;
+  font-size: 24px;
+  text-align: center;
+  margin: 100px auto 0 auto;
+}
+div.content {
+  margin: 15px 10px 0 10px;
+}
+hide {
+  display: none;
+}
+.center {
+  margin: 0px auto 0px auto;
+  text-align: center;
+}
+.well {
+  border: 1px solid #d5d5d5;
+}
+.alert {
+  position: fixed;
+  overflow: visible;
+  top: 15px;
+  left: 22%;
+  right: 0;
+  width: 50%;
+  margin: 0 auto 0 auto;
+  font-size: 16px;
+  text-align: center;
+  z-index: 9999;
+  margin: 0 5px 0 5px;
+  padding-top: 10px;
+  padding-bottom: 5px;
+}
+div#login, div#signup {
+  color: #8a8a8a;
+  text-align: center;
+  margin: 70px 0 0 0;
+}
+.section-title {
+  margin-bottom: 10px;
+}
+label.error {
+  color: #b20000
+}

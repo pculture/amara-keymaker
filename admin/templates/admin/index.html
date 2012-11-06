@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}
+<link href="{{url_for('static', filename='css/admin.css')}}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="row-fluid">
+  <div class="pull-right">
+    <a href="{{url_for('accounts.logout')}}">{{_('logout')}}</a>
+  </div>
+  <ul class="nav nav-tabs">
+    <li class="active"><a href="#users" data-toggle="tab">{{_('Users')}}</a></li>
+    <li><a href="#hosts" data-toggle="tab">{{_('Hosts')}}</a></li>
+  </ul>
+  <div class="tab-content">
+    <div id="users" class="tab-pane active">
+      <div id="dialog-create-user" class="modal hide" role="dialog">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h3>{{_('Create User')}}</h3>
+        </div>
+        <div class="modal-body">
+          <form id="create-user" method="post" action="{{url_for('accounts.create')}}">
+            <p><input id="user-username" type="text" class="input-medium required" name="username" placeholder="{{_('username')}}" /></p>
+            <p><input id="user-email" type="text" class="input-large required" name="email" placeholder="{{_('email')}}" /></p>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <a id="btn-new-user-create" href="#" class="btn btn-primary">{{_('Create')}}</a>
+          <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">{{_('Cancel')}}</a>
+        </div>
+      </div>
+      <div>
+        <a href="#dialog-create-user" role="button" class="btn btn-small" data-toggle="modal"><i class="icon-user"></i> {{_('Create User')}}</a>
+      </div>
+      <div class="section-content">
+        <table class="table table-striped table-bordered">
+          <th>{{_('Username')}}</th>
+          <th>{{_('Email')}}</th>
+          <th></th>
+          {% for user in users %}
+          <tr>
+            <td>{{user.username}}</td>
+            <td>{{user.email}}</td>
+            <td width="10%">
+              {% if user.username != 'admin' %}
+              <a href="#" class="btn btn-small edit-user" rel="tooltip" title="{{_('Edit')}}" data-username="{{user.username}}" data-email="{{user.email}}"><i class="icon-edit"></i></a>
+              <a href="#" class="btn btn-small delete-user" rel="tooltip" title="{{_('Delete')}}" data-username="{{user.username}}"><i class="icon-trash"></i></a>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td>{{_('No users')}}</td><td></td></tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+    <div id="hosts" class="tab-pane">
+      <div id="dialog-add-host" class="modal hide" role="dialog">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h3>{{_('Add Host')}}</h3>
+        </div>
+        <div class="modal-body">
+          <form id="add-host" method="post" action="{{url_for('admin.add_host')}}">
+            <p><input id="hostname" type="text" class="input-xlarge required" name="hostname" placeholder="{{_('hostname')}}" /></p>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <a id="btn-add-host" href="#" class="btn btn-primary">{{_('Add')}}</a>
+          <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">{{_('Cancel')}}</a>
+        </div>
+      </div>
+      <div id="dialog-set-ssh-info" class="modal hide" role="dialog">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h3>{{_('Set SSH Info')}}</h3>
+        </div>
+        <div class="modal-body">
+          <form id="set-ssh-info" method="post" action="{{url_for('admin.set_ssh_info')}}">
+            <p><input type="text" name="username" class="input-large required" placeholder="{{_('username')}}" /></p>
+            <p><textarea name="key" class="required"></textarea></p>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <a id="btn-set-ssh-info" href="#" class="btn btn-primary">{{_('Save')}}</a>
+          <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">{{_('Cancel')}}</a>
+        </div>
+      </div>
+      <div>
+        <a href="#dialog-add-host" role="button" class="btn btn-small" data-toggle="modal"><i class="icon-globe"></i> {{_('Add Host')}}</a>
+        <a href="#dialog-set-ssh-info" role="button" class="btn btn-small" data-toggle="modal"><i class="icon-lock"></i> {{_('Set SSH Info')}}</a>
+      </div>
+      <div class="section-content">
+        <table class="table table-striped table-bordered">
+          <th>{{_('Hostname')}}</th>
+          <th></th>
+          {% for host in hosts %}
+          <tr>
+            <td>{{host}}</td>
+            <td width="5%">
+              <a href="#" class="btn btn-small delete-host" rel="tooltip" title="{{_('Delete')}}" data-hostname="{{host}}"><i class="icon-trash"></i></a>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td>{{_('No hosts')}}</td><td></td></tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+</div>
+<script type="text/javascript">
+  $("a#btn-new-user-create").click(function(){
+    $("form#create-user").submit();
+  });
+  $("a.edit-user").click(function(){
+    var username = $(this).attr('data-username');
+    var email = $(this).attr('data-email');
+    $("input#user-username").val(username);
+    $("input#user-email").val(email);
+    $("#dialog-create-user").modal('show');
+  });
+  $("#dialog-create-user").on('hidden', function(){
+    $("input#user-username").val('');
+    $("input#user-email").val('');
+  });
+  $("a.delete-user").click(function(){
+    var username = $(this).attr('data-username');
+    if (confirm("{{_('Delete user?')}}")) {
+      var url = "{{url_for('accounts.delete')}}/" + username;
+      window.location.href = url;
+    }
+  });
+  $("a#btn-add-host").click(function(){
+    $("form#add-host").submit();
+  });
+  $("#dialog-add-host").on('hidden', function(){
+    $("input#user-hostname").val('');
+  });
+  $("a.delete-host").click(function(){
+    var hostname = $(this).attr('data-hostname');
+    if (confirm("{{_('Delete host?')}}")) {
+      var url = "{{url_for('admin.delete_host')}}/" + hostname;
+      window.location.href = url;
+    }
+  });
+  $("a#btn-set-ssh-info").click(function(){
+    $("form#set-ssh-info").submit();
+  });
+  $(function(){
+    $("form#create-user").validate();
+    $("form#add-host").validate();
+    $("form#set-ssh-info").validate();
+  });
+</script>
+{% endblock %}
