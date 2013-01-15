@@ -15,7 +15,8 @@
 import operator
 from flask import Blueprint, render_template, request, url_for, redirect, flash
 from decorators import admin_required
-from utils import db, hosts
+from utils import db, hosts, get_task, generate_api_response
+import pickle
 import messages
 
 bp = admin_blueprint = Blueprint('admin', __name__,
@@ -64,3 +65,15 @@ def delete_host(hostname=None):
         hosts.delete_host(hostname)
         flash(messages.HOST_DELETED, 'success')
     return redirect(url_for('admin.index'))
+
+@bp.route('/tasks/<task_id>')
+def view_task(task_id=None):
+    data = {}
+    if task_id:
+        task = get_task(task_id)
+        data['status'] = task.get('status')
+        res = task.get('result')
+        if res:
+            res = pickle.loads(res)
+        data['result'] = res
+    return generate_api_response(data)

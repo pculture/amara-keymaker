@@ -14,7 +14,8 @@
 # limitations under the License.
 from flask import (request, render_template, flash, redirect,
     url_for, session, current_app, Response, json, Blueprint)
-from utils import db, hash_text, reset_password
+from utils import (db, hash_text, reset_password, get_queue,
+    generate_api_response)
 import utils
 from decorators import login_required, admin_required
 import messages
@@ -72,13 +73,16 @@ def change_password():
             return redirect(url_for('accounts.change_password'))
         db.update_user(username, {'password': password})
         # update servers
-        if utils.reset_password(username, password):
-            flash(messages.PASSWORD_UPDATED, 'success')
-        else:
-            flash(messages.ERROR_UPDATING_PASSWORD, 'error')
+        queue = get_queue()
+        t = queue.enqueue(utils.reset_password, args=(username, password),
+            result_ttl=30)
         # reset session
         session['user'] = None
-        return redirect(url_for('index'))
+        data = {
+            'task_id': t.id,
+            'task_uri': url_for('admin.view_task', task_id=t.id)
+        }
+        return generate_api_response(data)
     ctx = {}
     return render_template('accounts/change_password.html', **ctx)
 

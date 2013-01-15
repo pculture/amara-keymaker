@@ -20,8 +20,15 @@ from flask.ext.mail import Message
 import tempfile
 from utils import hosts
 from redis import Redis
+from rq import Queue
 import hashlib
 import config
+
+RQ_JOB_KEY = 'rq:job:{0}'
+
+def get_queue():
+    rds = get_redis_connection()
+    return Queue(connection=rds)
 
 def get_redis_connection():
     """
@@ -93,7 +100,7 @@ def reset_password(username=None, password=None):
     :param password: Password
 
     """
-    ret = True
+    status = True
     ssh_user = hosts.get_ssh_user()
     ssh_key = hosts.get_ssh_key()
     all_hosts = list(hosts.get_hosts())
@@ -106,14 +113,22 @@ def reset_password(username=None, password=None):
         f.write(ssh_key)
     os.chmod(tmp_key, 0600)
     env.key_filename = tmp_key
+    result = {}
     try:
         for host in all_hosts:
             env.host_string = host
             with hide('running', 'stdout', 'stderr'):
                 sudo("echo -e '{0}\n{0}' | (sudo passwd -q {1})".format(
                     password, username))
-    except:
-        ret = False
+            result[host] = 'success'
+    except Exception, e:
+        result[host] = str(e)
+        status = False
+    result['status'] = status
     # remove key
     os.remove(tmp_key)
-    return ret
+    return result
+
+def get_task(task_id):
+    rds = get_redis_connection()
+    return rds.hgetall(RQ_JOB_KEY.format(task_id))
